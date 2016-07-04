@@ -8,12 +8,13 @@ DUBLIN_LON_RADIANS = math.radians(-6.2592576)
 EARTH_RADIUS = 6371 # Earth's radius in km
 
 
-def calc_km_from_dublin(lat, lon):
+def calc_km_from_dublin(entry):
 	""" Function which uses the Haversine formula for calculating spherical distances
 		to determine each customer's km from Dublin based on his/her lat, lon """
 
-	lat_radians = math.radians(float(lat))
-	lon_radians = math.radians(float(lon))
+	# convert lat, lon degrees to radians
+	lat_radians = math.radians(float(entry["latitude"]))
+	lon_radians = math.radians(float(entry["longitude"]))
 	
 	km_from_dublin = EARTH_RADIUS * 2 * math.asin( math.sqrt ( math.sin( math.fabs( DUBLIN_LAT_RADIANS - lat_radians ) / 2 ) ** 2 
 		+ ( math.cos( DUBLIN_LAT_RADIANS ) * math.cos( lat_radians ) * math.sin( math.fabs( DUBLIN_LON_RADIANS - lon_radians ) / 2 ) ** 2 )) )
@@ -24,7 +25,7 @@ def is_near_dublin(entry):
 	""" Function which returns a boolean:
 		True if customer is within 100 km of Dublin """
 
-	return calc_km_from_dublin(entry["latitude"], entry["longitude"]) < 100
+	return calc_km_from_dublin(entry) <= 100
 
 def is_float(value):
 	""" Function which checks if lat, lon strings
@@ -42,6 +43,7 @@ def is_entry_valid(entry):
 	if "user_id" not in entry or "name" not in entry or "latitude" not in entry or "longitude" not in entry:
 		return False
 
+	# check that lat, lon strings can be converted into valid floats
 	if not is_float(entry["latitude"]) or not is_float(entry["longitude"]):
 		return False
 
