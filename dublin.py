@@ -15,7 +15,8 @@ def calc_km_from_dublin(lat, lon):
 	lat_radians = math.radians(float(lat))
 	lon_radians = math.radians(float(lon))
 	
-	km_from_dublin = EARTH_RADIUS * 2 * math.asin( math.sqrt ( math.sin( math.fabs( DUBLIN_LAT_RADIANS - lat_radians ) / 2 ) ** 2 + ( math.cos( DUBLIN_LAT_RADIANS ) * math.cos( lat_radians ) * math.sin( math.fabs( DUBLIN_LON_RADIANS - lon_radians ) / 2 ) ** 2 )) )
+	km_from_dublin = EARTH_RADIUS * 2 * math.asin( math.sqrt ( math.sin( math.fabs( DUBLIN_LAT_RADIANS - lat_radians ) / 2 ) ** 2 
+		+ ( math.cos( DUBLIN_LAT_RADIANS ) * math.cos( lat_radians ) * math.sin( math.fabs( DUBLIN_LON_RADIANS - lon_radians ) / 2 ) ** 2 )) )
 
 	return km_from_dublin
 
@@ -24,6 +25,28 @@ def is_near_dublin(entry):
 		True if customer is within 100 km of Dublin """
 
 	return calc_km_from_dublin(entry["latitude"], entry["longitude"]) < 100
+
+def is_float(value):
+	""" Function which checks if lat, lon strings
+		can be converted to valid floats """
+	try:
+  		float(value)
+  		return True
+  	except ValueError:
+  		return False
+
+def is_entry_valid(entry):
+	""" Function which checks if entry is well-formed """
+
+	# check that all entries have relevant data
+	if "user_id" not in entry or "name" not in entry or "latitude" not in entry or "longitude" not in entry:
+		return False
+
+	if not is_float(entry["latitude"]) or not is_float(entry["longitude"]):
+		return False
+
+	return True
+
 
 def find_nearby_customers():
     """ Reads in customers.txt and returns the list customers 
@@ -34,25 +57,18 @@ def find_nearby_customers():
     with open(customers_file, 'r') as fp:
         file_data = fp.readlines()
 
-        customer_dict_list = [json.loads(entry) for entry in file_data if len(entry) > 0]
-        filtered_list = sorted(filter(is_near_dublin, customer_dict_list, key=lambda k: int(k[0]))
-        #my_list = sorted([tuple([entry["user_id"], entry["name"], calc_km_from_dublin(entry["latitude"], entry["longitude"])]) for entry in mydict_list if calc_km_from_dublin(entry["latitude"], entry["longitude"]) < 100], key=lambda k: int(k[0]))
-        
+        customer_dict_list = filter(is_entry_valid, [json.loads(entry) for entry in file_data if len(entry) > 0]) # ignore blank lines in txt file
+        filtered_list = sorted(filter(is_near_dublin, customer_dict_list), key=lambda k: k['user_id'])
 
-    return names_and_ids_list
+    return filtered_list
 
-
-print find_nearby_customers()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("search", metavar = "search", type = str, nargs = "*", help = "search term for contacts")
-
-    args = parser.parse_args()
     nearby_customers = find_nearby_customers()
 
-    if len(rankings) == 0:
-        print "No customers within 100 km found" # Print this message if no contact matches found.
+    if len(nearby_customers) == 0:
+        print "No customers within 100 km found" # Print this message if no nearby customers found.
     else:
-        print json.dumps(rankings, indent=4, separators=(", ", ": ")) # Python dictionaries have no inherent order, so entries within each contact will have different order from original. 
+    	print "\n".join([", ".join([entry["name"], str(entry["user_id"])]) for entry in nearby_customers])
+
 
