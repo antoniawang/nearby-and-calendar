@@ -49,6 +49,7 @@
 
       /* hover info */
       #tooltip {
+      	font-size: 12px;
         background-color: #fff;
         border: 2px solid #ccc;
         padding: 10px;

@@ -119,13 +119,14 @@
 	      rect.on("mouseout", mouseout);
 	      function mouseover(d) {
 	        tooltip.style("visibility", "visible");
-	        var occasion = (data_map[d] !== undefined) ? (data_map[d]["occasion"]) : "No Events";
-	        var purchase_text = d + ": " + occasion;
+	        var occasion = (data_map[d] !== undefined) ? (data_map[d]["occasion"]) + ", " : "No Events";
+	        var invited = (data_map[d] !== undefined) ? (data_map[d]["invited_count"]) + " invited" : "";
+	        var display_text = d + " : " + occasion + invited
 
 	        tooltip.transition()        
 	                    .duration(200)      
 	                    .style("opacity", .9);      
-	        tooltip.html(purchase_text)  
+	        tooltip.html(display_text)  
 	                    .style("left", (d3.event.pageX)+30 + "px")     
 	                    .style("top", (d3.event.pageY) + "px"); 
 	      }
