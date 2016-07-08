@@ -14,11 +14,11 @@
         percent = d3.format(".1%"),
         format = d3.time.format("%Y-%m-%d");
 
-    // var color = d3.scale.linear().range(["white", '#002b53'])
-    // .domain([0, 1])
-    var color = d3.scale.quantize()
-        .domain([-.05, .05])
-        .range(d3.range(11).map(function(d) { return "q" + d + "-11"; }));
+
+    //make colors based whether event was cancelled
+    var color = d3.scale.ordinal()
+      .domain([false, true])
+      .range(d3.range(2).map(function(d) { return "q" + d} ));
 
 
     var svg = d3.select("#chart").selectAll("svg")
@@ -26,7 +26,7 @@
       .enter().append("svg")
         .attr("width", width)
         .attr("height", height)
-        .attr("class", "RdYlGn")
+        .attr("class", "RdGn")
       .append("g")
 
     var rect = svg.selectAll(".day")
@@ -53,7 +53,7 @@
 
 
 
-    var month_titles = svg.selectAll(".month-title")  // Jan, Feb, Mar and the whatnot
+    var month_titles = svg.selectAll(".month-title")
           .data(function(d) { 
             return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1)); })
         .enter().append("text")
@@ -101,18 +101,9 @@
   		});
 
 	    rect.filter(function(d) { return d in data_map; })
-	    	// console.log(d);
-	    	// for (i=0; i<data.length; i++) {
-	    	// 	if (d === data[i]["date_string"]) {
-	    	// 		console.log("True");
-	    	// 		return true;
-	    	// 		}
-	    	// 	}
-	    	// 	return false;
-	    	// })
-	          .attr("class", function(d) { return "day " + color(data_map[d]["invited_count"]); })
+	          .attr("class", function(d) { return "day " + color(data_map[d]["cancelled"]); })
 	        .select("title")
-	          .text(function(d) { console.log("Fermi"); return d + ": " + (data_map[d]); });
+	          .text(function(d) { return d + ": " + (data_map[d]); });
 
 	      //  Tooltip
 	      rect.on("mouseover", mouseover);
@@ -121,7 +112,8 @@
 	        tooltip.style("visibility", "visible");
 	        var occasion = (data_map[d] !== undefined) ? (data_map[d]["occasion"]) + ", " : "No Events";
 	        var invited = (data_map[d] !== undefined) ? (data_map[d]["invited_count"]) + " invited" : "";
-	        var display_text = d + " : " + occasion + invited
+          var cancelled = (data_map[d] !== undefined && data_map[d]["cancelled"] === true ) ? " CANCELLED" : "";
+	        var display_text = d + " : " + occasion + invited + cancelled;
 
 	        tooltip.transition()        
 	                    .duration(200)      
@@ -140,13 +132,6 @@
 
     });
 
-    //  d3.csv("dji.csv", function(error, csv) {
-    //   var data = d3.nest()
-    //     .key(function(d) { return d.Date; })
-    //     .rollup(function(d) { return (d[0].Close - d[0].Open) / d[0].Open; })
-    //     .map(csv);
-
-   
 
     function dayTitle (t0) {
       return t0.toString().split(" ")[2];
