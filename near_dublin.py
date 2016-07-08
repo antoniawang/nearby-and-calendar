@@ -2,10 +2,14 @@ import json
 import math
 import os
 
+
+# Declare constants
 DUBLIN_LAT_RADIANS = math.radians(53.3381985) 
 DUBLIN_LON_RADIANS = math.radians(-6.2592576)
 
-EARTH_RADIUS = 6371 # Earth's radius in km
+EARTH_RADIUS = 6371 # earth's radius in km
+NEARBY_DIST = 100 # nearby defined as within 100 km
+
 
 
 def calc_km_from_dublin(entry):
@@ -25,7 +29,7 @@ def is_near_dublin(entry):
 	""" Function which returns a boolean:
 		True if customer is within 100 km of Dublin """
 
-	return calc_km_from_dublin(entry) <= 100
+	return calc_km_from_dublin(entry) <= NEARBY_DIST
 
 def is_float(value):
 	""" Function which checks if lat, lon strings
@@ -52,15 +56,15 @@ def is_entry_valid(entry):
 
 def find_nearby_customers():
     """ Reads in customers.txt and returns the list customers 
-    who are within 100 km of Dublin, sorted by ID. """
+    who are within nearby distance (100 km) of Dublin, sorted by ID. """
 
     mydir = os.path.dirname(__file__)
     customers_file = os.path.join(mydir, "customers.txt")
     with open(customers_file, 'r') as fp:
         file_data = fp.readlines()
 
-        customer_dict_list = filter(is_entry_valid, [json.loads(entry) for entry in file_data if len(entry) > 0]) # ignore blank lines in txt file
-        filtered_list = sorted(filter(is_near_dublin, customer_dict_list), key=lambda k: k['user_id'])
+        customer_dict_list = filter(is_entry_valid, [json.loads(entry) for entry in file_data if len(entry) > 0]) # check for valid entry and ignore blank lines in txt file
+        filtered_list = sorted(filter(is_near_dublin, customer_dict_list), key=lambda k: k['user_id']) # filter for nearby customers and sort results by user_id
 
     return filtered_list
 
@@ -71,6 +75,6 @@ if __name__ == '__main__':
     if len(nearby_customers) == 0:
         print "No customers within 100 km found" # Print this message if no nearby customers found.
     else:
-    	print "\n".join([", ".join([entry["name"], str(entry["user_id"])]) for entry in nearby_customers])
+    	print "The following customers are nearby: \n", "\n".join([", ".join([entry["name"], str(entry["user_id"])]) for entry in nearby_customers])
 
 
